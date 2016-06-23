@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,8 +15,11 @@ namespace MoreAchievements
     {
         // Changes (Zmienne)
         Config conf = new Config();
-        Config.Load cLoad = new Config.Load();
-        private string path = TShock.SavePath;
+        //Config.JSON.config confff = new Config.JSON.config();
+        //Config.Load cLoad = new Config.Load();
+        // Private
+        private string path = Path.Combine(TShock.SavePath, "MoreAchievements.json");
+        private bool itisON;
         // End of this
         //Init
         public override Version Version
@@ -34,6 +38,7 @@ namespace MoreAchievements
         {
             get { return "Add more Achievements"; }
         }
+
         public MoreAchievements(Main game) : base(game)
         {
             //Nothing!
@@ -41,8 +46,8 @@ namespace MoreAchievements
         public override void Initialize()
         {
             //Configs
-            cLoad.ConfigLoad(path);
-            TrueConfigLoad(path);
+
+            //TrueConfigLoad(path);
             //Hooks
 
         }
@@ -51,14 +56,14 @@ namespace MoreAchievements
             if (disposing)
             {
                 //UnHooks
-
+                
             }
             base.Dispose(disposing);
         }
-        private void TrueConfigLoad (string path)
+       /* private void TrueConfigLoad (string path)
         {
             // Loading to changes (Zmiennych)
 
-        }
+        }*/
     }
 }
