@@ -2,68 +2,77 @@
 using System.IO;
 using TShockAPI;
 using Newtonsoft.Json;
-
+using System.Data;
 
 namespace MoreAchievements
 {
     public class Config
     {
-        public bool MyBool1 = false;
-        public bool MyBool2 = false;
+        public bool enable { get; set; }
+        public DataSet achSet { get; set; }
 
-        public static Config Read(string path)
+        public static Config loadProcedure(string path)
         {
-
-            if (!File.Exists(path))
-
+            bool isit = File.Exists(path);
+            if (isit)
             {
-
-                Config config = new Config();
-
-                File.WriteAllText(path, JsonConvert.SerializeObject(config, Formatting.Indented));
-
-                return config;
-
+                TShock.Log.Info("Config file found!");
+                var JSON = load(path);
+                return (JSON);
             }
-
-            return JsonConvert.DeserializeObject<Config>(File.ReadAllText(path));
-        }
-        public void Write(string path)
-        {
-            using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Write))
+            else
             {
-                Write(fs);
+                TShock.Log.Error("Config file not found!");
+                var JSON = create(path);
+                return (JSON);
             }
         }
 
-        public void Write(Stream stream)
+        public static Config load(string path)
         {
-            var str = JsonConvert.SerializeObject(this, Formatting.Indented);
-            using (var sw = new StreamWriter(stream))
-            {
-                sw.Write(str);
-            }
+            StreamReader sr = new StreamReader(File.Open(path, FileMode.Open));
+            var JSON = JsonConvert.DeserializeObject<Config>(sr.ReadToEnd());
+            return (JSON);
         }
 
-        public static Action<ConfigFile> ConfigRead;
-
-        internal static string ConfigPath { get { return Path.Combine(TShock.SavePath, "PLUGIN.json"); } }
-
-        public static void SetupConfig()
+        public static Config create(string path)
         {
-            try
+            Config cd = new Config
             {
-                if (File.Exists(ConfigPath))
-                    MoreAchievements.Config = Read(ConfigPath);
-                /* Add all the missing config properties in the json file */
+                enable = true,
+                achSet = new DataSet("Achievements")
+            };
+            DataTable tAch = new DataTable("Achievements");
+            DataColumn en = new DataColumn("Enable", typeof(bool));
+            DataColumn na = new DataColumn("Name", typeof(string));
+            DataColumn tp = new DataColumn("Type", typeof(string));
+            DataColumn op = new DataColumn("Options", typeof(string));
+            tAch.Columns.Add(en);
+            tAch.Columns.Add(na);
+            tAch.Columns.Add(tp);
+            tAch.Columns.Add(op);
+            cd.achSet.Tables.Add(tAch);
 
-                Config.Write(ConfigPath);
-            }
-            catch (Exception ex)
-            {
-                TShock.Log.ConsoleError("Config Exception: Error in config file");
-                TShock.Log.Error(ex.ToString());
-            }
+            DataRow dR = tAch.NewRow();
+            dR["Enable"] = true;
+            dR["Name"] = "First dirt!";
+            dR["Type"] = "Dig";
+            dR["Options"] = "Dirt";
+            tAch.Rows.Add(dR);
+
+            cd.achSet.AcceptChanges();
+
+            File.WriteAllText(path, JsonConvert.SerializeObject(cd, Formatting.Indented));
+
+            StreamReader sr = new StreamReader(File.Open(path, FileMode.Open));
+            var JSON = JsonConvert.DeserializeObject<Config>(sr.ReadToEnd());
+            return (JSON);
         }
     }
+    
+    /*public static class configDetiles
+    {
+        public bool enable { get; set; }
+        public DataSet achSet { get; set; }
+    }*/
 }
